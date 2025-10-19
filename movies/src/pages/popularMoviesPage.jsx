@@ -1,14 +1,14 @@
 import React from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { useQuery } from "@tanstack/react-query";
-import { getUpcomingMovies } from "../api/tmdb-api";
+import { getPopularMovies } from "../api/tmdb-api";
 import Spinner from "../components/spinner";
 import AddToWatchlist from "../components/cardIcons/addToWatchList";
 
-export default function UpcomingMoviesPage() {
+export default function PopularMoviesPage() {
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["upcoming"],
-    queryFn: getUpcomingMovies,
+    queryKey: ["popular"],
+    queryFn: getPopularMovies,
   });
 
   if (isPending) return <Spinner />;
@@ -17,8 +17,8 @@ export default function UpcomingMoviesPage() {
   const movies = data?.results ?? [];
   return (
     <PageTemplate
-      key={pathname} 
-      title="Upcoming Movies"
+      //key="popular"
+      title="Popular Movies"
       movies={movies}
       action={(m) => <AddToWatchlist movie={m} />}
     />
