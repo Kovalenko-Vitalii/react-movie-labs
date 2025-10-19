@@ -1,26 +1,25 @@
 import React from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { useQuery } from "@tanstack/react-query";
-import { getPopularMovies } from "../api/tmdb-api";
+import { getTopRatedMovies } from "../api/tmdb-api";
 import Spinner from "../components/spinner";
-import AddToWatchlist from "../components/cardIcons/addToWatchList";
-
-export default function PopularMoviesPage() {
+import AddToWatchListIcon from "../components/cardIcons/addToWatchList";
+export default function TopRatedMoviesPage() {
   const { data, isPending, isError, error } = useQuery({
-    queryKey: ["popular"],
-    queryFn: getPopularMovies,
+    queryKey: ["movies", "top_rated"],
+    queryFn: getTopRatedMovies,
   });
 
   if (isPending) return <Spinner />;
   if (isError) return <p style={{ padding: 24 }}>{String(error?.message || error)}</p>;
 
   const movies = data?.results ?? [];
+
   return (
     <PageTemplate
-      //key="popular"
-      title="Popular Movies"
+      title="Top-Rated Movies"
       movies={movies}
-      action={(m) => <AddToWatchlist movie={m} />}
+      action={(m) => <AddToWatchListIcon movie={m} />}
     />
   );
 }

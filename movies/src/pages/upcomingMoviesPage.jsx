@@ -17,7 +17,7 @@ export default function UpcomingMoviesPage() {
   const movies = data?.results ?? [];
   return (
     <PageTemplate
-      key={pathname} 
+      //key="upcoming" 
       title="Upcoming Movies"
       movies={movies}
       action={(m) => <AddToWatchlist movie={m} />}
