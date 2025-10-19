@@ -1,42 +1,55 @@
-import React from "react";
-import { getMovies } from "../api/tmdb-api";
-import PageTemplate from '../components/templateMovieListPage';
-import { useQuery } from '@tanstack/react-query';
-import Spinner from '../components/spinner';
-import AddToFavoritesIcon from '../components/cardIcons/addToFavorites'
+import React, { useMemo, useState } from "react";
+import PageTemplate from "../components/templateMovieListPage";
+import FilterMoviesCard from "../components/filterMoviesCard";
+import { useQuery } from "@tanstack/react-query";
+import { getDiscoverMovies } from "../api/tmdb-api";
+import Spinner from "../components/spinner";
+import AddToFavoritesIcon from "../components/cardIcons/addToFavorites";
 
+export default function HomePage() {
+  const [filtersDraft, setFiltersDraft] = useState({
+    name: "", genre: "0", sort: "popularity.desc", year: "", adult: false,
+  });
+  const [filtersApplied, setFiltersApplied] = useState(filtersDraft);
 
-const HomePage = (props) => {
+  const onUserInput = (type, value) =>
+    setFiltersDraft(prev => ({ ...prev, [type]: value }));
 
-  const { data, error, isPending, isError  } = useQuery({
-    queryKey: ['discover'],
-    queryFn: getMovies,
-  })
-  
-  if (isPending) {
-    return <Spinner />
-  }
+  const onSearch = () => setFiltersApplied(filtersDraft);
 
-  if (isError) {
-    return <h1>{error.message}</h1>
-  }  
-  
-  const movies = data.results;
+  const params = useMemo(() => ({
+    sort_by: filtersApplied.sort,
+    with_genres: filtersApplied.genre !== "0" ? String(filtersApplied.genre) : undefined,
+    primary_release_year: filtersApplied.year || undefined,
+    include_adult: filtersApplied.adult ? "true" : "false",
+  }), [filtersApplied]);
 
-  // Redundant, but necessary to avoid app crashing.
-  const favorites = movies.filter(m => m.favorite)
-  localStorage.setItem('favorites', JSON.stringify(favorites))
-  const addToFavorites = (movieId) => true 
+  const { data, error, isPending, isError } = useQuery({
+    queryKey: ["movies","discover", params],
+    queryFn: () => getDiscoverMovies(params),
+  });
 
-  return (
-      <PageTemplate
-        title="Discover Movies"
-        movies={movies}
-        action={(movie) => {
-          return <AddToFavoritesIcon movie={movie} />
-        }}
-      />
+  if (isPending) return <Spinner />;
+  if (isError) return <h1 style={{padding:24}}>{error.message}</h1>;
+
+  const movies = (data?.results ?? []).filter(m =>
+    m.title?.toLowerCase().includes((filtersApplied.name || "").toLowerCase())
   );
 
-};
-export default HomePage;
+  return (
+    <PageTemplate
+      title="Discover Movies"
+      movies={movies}
+      action={(movie) => <AddToFavoritesIcon movie={movie} />}
+      filterProps={{
+        onUserInput,
+        onSearch,                           
+        titleFilter: filtersDraft.name,
+        genreFilter: filtersDraft.genre,
+        sort: filtersDraft.sort,
+        year: filtersDraft.year,
+        adult: filtersDraft.adult,
+      }}
+    />
+  );
+}

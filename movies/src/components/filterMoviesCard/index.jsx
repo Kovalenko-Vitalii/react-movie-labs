@@ -1,3 +1,4 @@
+import React from "react";
 import Card from "@mui/material/Card";
 import CardMedia from "@mui/material/CardMedia";
 import CardContent from "@mui/material/CardContent";
@@ -8,108 +9,112 @@ import TextField from "@mui/material/TextField";
 import SearchIcon from "@mui/icons-material/Search";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
-import img from '../../images/pexels-dziana-hasanbekava-5480827.jpg'
-import React, {useState, useEffect}  from "react";
+import Switch from "@mui/material/Switch";
+import FormControlLabel from "@mui/material/FormControlLabel";
+import Button from "@mui/material/Button";
+import img from "../../images/pexels-dziana-hasanbekava-5480827.jpg";
+import { useQuery } from "@tanstack/react-query";
 import { getGenres } from "../../api/tmdb-api";
-import { useQuery } from '@tanstack/react-query';
-import Spinner from '../spinner';
+import Spinner from "../spinner";
 
-
-
-const formControl = 
-  {
-    margin: 1,
-    minWidth: "90%",
-    backgroundColor: "rgb(255, 255, 255)"
-  };
+const formControl = { margin: 1, minWidth: "90%", backgroundColor: "#fff" };
 
 export default function FilterMoviesCard(props) {
-
-  const { data, error, isPending, isError } = useQuery({
-    queryKey: ['genres'],
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["genres"],
     queryFn: getGenres,
   });
 
-  if (isPending) {
-    return <Spinner />;
-  }
+  if (isPending) return <Spinner />;
+  if (isError) return <h1>{error.message}</h1>;
 
-  if (isError) {
-    return <h1>{error.message}</h1>;
-  }
-  const genres = data.genres;
-  if (genres[0].name !== "All"){
-    genres.unshift({ id: "0", name: "All" });
-  }
+  const genres = (() => {
+    const arr = Array.isArray(data?.genres) ? [...data.genres] : [];
+    if (!arr.length || arr[0]?.name !== "All") arr.unshift({ id: "0", name: "All" });
+    return arr;
+  })();
 
-  const handleChange = (e, type, value) => {
-    e.preventDefault();
-    props.onUserInput(type, value); 
-  };
-
-  const handleTextChange = (e, props) => {
-    handleChange(e, "name", e.target.value);
-  };
-
-  const handleGenreChange = (e) => {
-    handleChange(e, "genre", e.target.value);
-  };
-
-
+  const change = (type) => (e) => props.onUserInput(type, e.target?.value ?? e);
 
   return (
-    <Card 
-      sx={{
-        backgroundColor: "rgb(204, 204, 0)"
-      }} 
-      variant="outlined">
+    <Card sx={{ backgroundColor: "rgb(204, 204, 0)" }} variant="outlined">
       <CardContent>
-        <Typography variant="h5" component="h1">
-          <SearchIcon fontSize="large" />
-          Filter the movies.
+        <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
+          <SearchIcon fontSize="large" /> &nbsp;Filter the movies
         </Typography>
+
         <TextField
-            sx={{...formControl}}
-            id="filled-search"
-            label="Search field"
-            type="search"
-            variant="filled"
-            value={props.titleFilter}
-            onChange={handleTextChange}
-            />
+          sx={formControl}
+          label="Search by title"
+          type="search"
+          variant="filled"
+          value={props.titleFilter ?? ""}
+          onChange={change("name")}
+        />
 
-        <FormControl sx={{...formControl}}>
+        <FormControl sx={formControl}>
           <InputLabel id="genre-label">Genre</InputLabel>
-            <Select
-                labelId="genre-label"
-                id="genre-select"
-                defaultValue=""
-                value={props.genreFilter}
-                onChange={handleGenreChange}
-            >
-
-            {genres.map((genre) => {
-              return (
-                <MenuItem key={genre.id} value={genre.id}>
-                  {genre.name}
-                </MenuItem>
-              );
-            })}
+          <Select
+            labelId="genre-label"
+            value={props.genreFilter ?? "0"}
+            label="Genre"
+            onChange={change("genre")}
+          >
+            {genres.map((g) => (
+              <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
+            ))}
           </Select>
         </FormControl>
+
+        <FormControl sx={formControl}>
+          <InputLabel id="sort-label">Sort by</InputLabel>
+          <Select
+            labelId="sort-label"
+            value={props.sort ?? "popularity.desc"}
+            label="Sort by"
+            onChange={change("sort")}
+          >
+            <MenuItem value="popularity.desc">Popularity ↓</MenuItem>
+            <MenuItem value="popularity.asc">Popularity ↑</MenuItem>
+            <MenuItem value="vote_average.desc">Rating ↓</MenuItem>
+            <MenuItem value="vote_average.asc">Rating ↑</MenuItem>
+            <MenuItem value="primary_release_date.desc">Release date ↓</MenuItem>
+            <MenuItem value="primary_release_date.asc">Release date ↑</MenuItem>
+          </Select>
+        </FormControl>
+
+        <TextField
+          sx={formControl}
+          label="Year (e.g. 2024)"
+          type="number"
+          variant="filled"
+          value={props.year ?? ""}
+          onChange={change("year")}
+          inputProps={{ min: 1900, max: 2100 }}
+        />
+
+        <FormControlLabel
+          sx={{ ml: 1 }}
+          control={
+            <Switch
+              checked={Boolean(props.adult)}
+              onChange={(e) => props.onUserInput("adult", e.target.checked)}
+            />
+          }
+          label="Include adult"
+        />
+
+        <Button
+          variant="contained"
+          sx={{ mt: 2, ml: 1 }}
+          onClick={props.onSearch}
+          startIcon={<SearchIcon />}
+        >
+          Search
+        </Button>
       </CardContent>
-      <CardMedia
-        sx={{ height: 300 }}
-        image={img}
-        title="Filter"
-      />
-      <CardContent>
-        <Typography variant="h5" component="h1">
-          <SearchIcon fontSize="large" />
-          Filter the movies.
-          <br />
-        </Typography>
-      </CardContent>
+
+      <CardMedia sx={{ height: 300 }} image={img} title="Filter" />
     </Card>
   );
 }
