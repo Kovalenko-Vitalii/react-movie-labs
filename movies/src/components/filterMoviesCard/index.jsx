@@ -12,12 +12,13 @@ import Select from "@mui/material/Select";
 import Switch from "@mui/material/Switch";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Button from "@mui/material/Button";
+import Box from "@mui/material/Box";
 import img from "../../images/pexels-dziana-hasanbekava-5480827.jpg";
 import { useQuery } from "@tanstack/react-query";
 import { getGenres } from "../../api/tmdb-api";
 import Spinner from "../spinner";
 
-const formControl = { margin: 1, minWidth: "90%", backgroundColor: "#fff" };
+const fc = { my: 1.5, width: "100%" };
 
 export default function FilterMoviesCard(props) {
   const { data, isPending, isError, error } = useQuery({
@@ -37,22 +38,45 @@ export default function FilterMoviesCard(props) {
   const change = (type) => (e) => props.onUserInput(type, e.target?.value ?? e);
 
   return (
-    <Card sx={{ backgroundColor: "rgb(204, 204, 0)" }} variant="outlined">
-      <CardContent>
-        <Typography variant="h5" component="h1" sx={{ mb: 1 }}>
-          <SearchIcon fontSize="large" /> &nbsp;Filter the movies
+    <Card
+      elevation={3}
+      sx={{
+        borderRadius: 3,
+        overflow: "hidden",
+        bgcolor: "#fff",
+      }}
+      variant="outlined"
+    >
+      <Box
+        sx={{
+          display: "flex",
+          alignItems: "center",
+          gap: 1.5,
+          px: 3,
+          py: 2,
+          bgcolor: "primary.main",
+          color: "primary.contrastText",
+        }}
+      >
+        <SearchIcon />
+        <Typography variant="h5" component="h1" sx={{ fontWeight: 600 }}>
+          Filter the movies
         </Typography>
+      </Box>
 
+      <CardContent sx={{ px: 3, pt: 2, pb: 3 }}>
         <TextField
-          sx={formControl}
+          sx={fc}
           label="Search by title"
           type="search"
-          variant="filled"
+          variant="outlined"
+          size="small"
+          fullWidth
           value={props.titleFilter ?? ""}
           onChange={change("name")}
         />
 
-        <FormControl sx={formControl}>
+        <FormControl sx={fc} size="small" fullWidth>
           <InputLabel id="genre-label">Genre</InputLabel>
           <Select
             labelId="genre-label"
@@ -61,12 +85,14 @@ export default function FilterMoviesCard(props) {
             onChange={change("genre")}
           >
             {genres.map((g) => (
-              <MenuItem key={g.id} value={g.id}>{g.name}</MenuItem>
+              <MenuItem key={g.id} value={g.id}>
+                {g.name}
+              </MenuItem>
             ))}
           </Select>
         </FormControl>
 
-        <FormControl sx={formControl}>
+        <FormControl sx={fc} size="small" fullWidth>
           <InputLabel id="sort-label">Sort by</InputLabel>
           <Select
             labelId="sort-label"
@@ -84,19 +110,22 @@ export default function FilterMoviesCard(props) {
         </FormControl>
 
         <TextField
-          sx={formControl}
+          sx={fc}
           label="Year (e.g. 2024)"
           type="number"
-          variant="filled"
+          variant="outlined"
+          size="small"
+          fullWidth
           value={props.year ?? ""}
           onChange={change("year")}
           inputProps={{ min: 1900, max: 2100 }}
         />
 
         <FormControlLabel
-          sx={{ ml: 1 }}
+          sx={{ mt: 1 }}
           control={
             <Switch
+              color="primary"
               checked={Boolean(props.adult)}
               onChange={(e) => props.onUserInput("adult", e.target.checked)}
             />
@@ -106,15 +135,29 @@ export default function FilterMoviesCard(props) {
 
         <Button
           variant="contained"
-          sx={{ mt: 2, ml: 1 }}
+          color="primary"
+          size="medium"
+          sx={{ mt: 2 }}
           onClick={props.onSearch}
           startIcon={<SearchIcon />}
+          fullWidth
         >
           Search
         </Button>
       </CardContent>
 
-      <CardMedia sx={{ height: 300 }} image={img} title="Filter" />
+      <Box sx={{ position: "relative" }}>
+        <CardMedia sx={{ height: 160 }} image={img} title="Filter" />
+        <Box
+          sx={{
+            position: "absolute",
+            inset: 0,
+            background:
+              "linear-gradient(180deg, rgba(25,118,210,0.2) 0%, rgba(25,118,210,0.4) 100%)",
+            pointerEvents: "none",
+          }}
+        />
+      </Box>
     </Card>
   );
 }
