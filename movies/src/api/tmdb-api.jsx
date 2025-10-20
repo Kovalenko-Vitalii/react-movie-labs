@@ -100,22 +100,23 @@ export const getMovie = (args) => {
    });
   };
 
-  export const getUpcomingMovies = () => {
-    return fetch(
-      `https://api.themoviedb.org/3/movie/upcoming?api_key=${import.meta.env.VITE_TMDB_KEY}&language=en-US&page=1`
-    )
-      .then((response) => {
-        if (!response.ok) {
-          return response.json().then((error) => {
-            throw new Error(error.status_message || "Something went wrong");
-          });
-        }
-        return response.json();
-      })
-      .catch((error) => {
-        throw error;
-      });
-  };
+export const getUpcomingMovies = (page = 1) => {
+  return fetch(
+    `https://api.themoviedb.org/3/movie/upcoming?api_key=${import.meta.env.VITE_TMDB_KEY}&language=en-US&page=${page}`
+  )
+    .then((response) => {
+      if (!response.ok) {
+        return response.json().then((error) => {
+          throw new Error(error.status_message || "Something went wrong");
+        });
+      }
+      return response.json();
+    })
+    .catch((error) => {
+      throw error;
+    });
+};
+
 
 export const getMovieCredits = ({ queryKey }) => {
   const [, idPart] = queryKey;
@@ -162,9 +163,11 @@ export const getDiscoverMovies = (params = {}) => {
   return fetch(`${BASE}/discover/movie?${q.toString()}`).then(handle);
 };
 
- export const getTopRatedMovies = () => {
+export const getTopRatedMovies = (page = 1) => {
   return fetch(
-    `https://api.themoviedb.org/3/movie/top_rated?api_key=${import.meta.env.VITE_TMDB_KEY}&language=en-US&page=1`
+    `https://api.themoviedb.org/3/movie/top_rated?api_key=${
+      import.meta.env.VITE_TMDB_KEY
+    }&language=en-US&page=${page}`
   )
     .then((response) => {
       if (!response.ok) {

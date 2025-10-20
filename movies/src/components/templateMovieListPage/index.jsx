@@ -4,7 +4,7 @@ import FilterCard from "../filterMoviesCard";
 import MovieList from "../movieList";
 import Grid from "@mui/material/Grid";
 
-function MovieListPageTemplate({ movies, title, action, filterProps }) {
+function MovieListPageTemplate({ movies, title, action, filterProps, footer }) {
   return (
     <Grid container>
       <Grid size={12}>
@@ -17,12 +17,11 @@ function MovieListPageTemplate({ movies, title, action, filterProps }) {
           size={{ xs: 12, sm: 6, md: 4, lg: 3, xl: 2 }}
           sx={{ padding: "20px" }}
         >
-          {filterProps ? (
-            <FilterCard {...filterProps} />
-          ) : null}
+          {filterProps ? <FilterCard {...filterProps} /> : null}
         </Grid>
 
         <MovieList action={action} movies={movies} />
+        {footer}
       </Grid>
     </Grid>
   );
