@@ -1,7 +1,7 @@
 import React, { useState, useMemo, useCallback } from "react";
 import PageTemplate from "../components/templateMovieListPage";
 import { useQuery } from "@tanstack/react-query";
-import { getUpcomingMovies } from "../api/tmdb-api";
+import { getDiscoverMovies } from "../api/tmdb-api";
 import Spinner from "../components/spinner";
 import AddToWatchlist from "../components/cardIcons/addToWatchList";
 import Pagination from "@mui/material/Pagination";
@@ -24,52 +24,42 @@ export default function UpcomingMoviesPage() {
   }, []);
 
   const onSearch = useCallback(() => {
-    setPage(1); 
+    setPage(1);
     setFiltersApplied(filtersDraft);
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [filtersDraft]);
 
-  const { data, isPending, isError, error } = useQuery({
-    queryKey: ["movies", "upcoming", page],
-    queryFn: () => getUpcomingMovies(page),
-  });
-
-  const movies = data?.results ?? [];
-
-  const displayed = useMemo(() => {
-    let list = movies.filter((m) =>
-      (m.title || "").toLowerCase().includes((filtersApplied.name || "").toLowerCase())
-    );
-
-    const gid = Number(filtersApplied.genre);
-    if (gid > 0) list = list.filter((m) => (m.genre_ids || []).includes(gid));
-
-    const y = Number(filtersApplied.year);
-    if (y > 0) list = list.filter((m) => (m.release_date || "").startsWith(`${y}-`));
-
-    const keyMap = {
-      popularity: (m) => m.popularity ?? 0,
-      vote_average: (m) => m.vote_average ?? 0,
-      primary_release_date: (m) => new Date(m.release_date || 0).getTime(),
+  const params = useMemo(() => {
+    const today = new Date().toISOString().slice(0, 10); 
+    return {
+      sort_by: filtersApplied.sort,
+      with_genres:
+        filtersApplied.genre !== "0" ? String(filtersApplied.genre) : undefined,
+      primary_release_year: filtersApplied.year || undefined,
+      include_adult: filtersApplied.adult ? "true" : "false",
+      page: String(page),
+      "primary_release_date.gte": today,
+      with_release_type: "2|3",
     };
-    const [key, dir] = (filtersApplied.sort || "popularity.desc").split(".");
-    const getter = keyMap[key] || keyMap.popularity;
-    const mult = dir === "asc" ? 1 : -1;
+  }, [filtersApplied, page]);
 
-    return [...list].sort((a, b) => {
-      const va = getter(a);
-      const vb = getter(b);
-      return (va === vb ? 0 : va > vb ? 1 : -1) * mult;
-    });
-  }, [movies, filtersApplied]);
+  const { data, isPending, isError, error } = useQuery({
+    queryKey: ["movies", "upcoming-discover", params],
+    queryFn: () => getDiscoverMovies(params),
+    keepPreviousData: true,
+  });
 
   if (isPending) return <Spinner />;
   if (isError) return <p style={{ padding: 24 }}>{String(error?.message || error)}</p>;
 
+  const movies = (data?.results ?? []).filter((m) =>
+    (m.title || "").toLowerCase().includes((filtersApplied.name || "").toLowerCase())
+  );
+
   return (
     <PageTemplate
       title="Upcoming Movies"
-      movies={displayed}
+      movies={movies}
       action={(m) => <AddToWatchlist movie={m} />}
       filterProps={{
         onUserInput,

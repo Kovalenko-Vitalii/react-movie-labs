@@ -154,14 +154,14 @@ export const getDiscoverMovies = (params = {}) => {
     include_adult: "false",
     include_video: "false",
     language: "en-US",
-    page: params.page?.toString() ?? "1",
-    sort_by: params.sort_by ?? "popularity.desc",
-    with_genres: params.with_genres ?? "",
-    primary_release_year: params.primary_release_year ?? "",
-    query: undefined,
   });
+
+  Object.entries(params).forEach(([k, v]) => {
+    if (v !== undefined && v !== null && v !== "") q.set(k, String(v));
+  });
+
   return fetch(`${BASE}/discover/movie?${q.toString()}`).then(handle);
-};
+};;
 
 export const getTopRatedMovies = (page = 1) => {
   return fetch(
@@ -181,3 +181,4 @@ export const getTopRatedMovies = (page = 1) => {
       throw error;
     });
 };
+
