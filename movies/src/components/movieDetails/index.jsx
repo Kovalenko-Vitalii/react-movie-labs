@@ -34,7 +34,6 @@ const chip = { margin: 0.5 };
 const MovieDetails = ({ movie }) => {
   const [drawerOpen, setDrawerOpen] = useState(false);
 
-  // --- ДОБАВЛЕНО: запросы для каст/реком/похожих ---
   const id = movie.id;
   const { data: credits, isPending: loadingCredits } = useQuery({
     queryKey: ["credits", { id }],
@@ -51,7 +50,6 @@ const MovieDetails = ({ movie }) => {
 
   return (
     <>
-      {/* --- ТВОЙ ИСХОДНЫЙ КОНТЕНТ --- */}
       <Typography variant="h5" component="h3">
         Overview
       </Typography>
@@ -102,7 +100,6 @@ const MovieDetails = ({ movie }) => {
         <MovieReviews movie={movie} />
       </Drawer>
 
-      {/* --- ДОБАВЛЕНО: компактный CAST (горизонтальная лента, max 12) --- */}
       <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
         Cast
       </Typography>
@@ -134,7 +131,6 @@ const MovieDetails = ({ movie }) => {
             ))}
       </Box>
 
-      {/* --- ДОБАВЛЕНО: Recommendations (сеткой, max 12) --- */}
       <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
         Recommendations
       </Typography>
@@ -165,7 +161,6 @@ const MovieDetails = ({ movie }) => {
             ))}
       </Box>
 
-      {/* --- ДОБАВЛЕНО: Similar (сеткой, max 12) --- */}
       <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>
         Similar
       </Typography>
